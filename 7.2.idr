@@ -38,3 +38,5 @@ Show ty => Show (Expr ty) where
   (==) x y = (==) (eval x) (eval y)
 
 -- 7.2.3
+(Abs num, Integral num, Neg num) => Cast (Expr num) num where
+  cast = eval
