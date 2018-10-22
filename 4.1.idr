@@ -38,15 +38,19 @@ maxMaybe (Just a) (Just b) = Just (max a b)
 maxMaybe Nothing b = b
 maxMaybe a Nothing = a
 
--- vectTake : (n : Nat) -> Vect (n + m) a -> Vect n a
--- vectTake Z _ = Nil
--- vectTake (S k) (x :: xs) = x :: vectTake k xs
+-- 4.1.6
+data Shape = Triangle Double Double
+           | Rectangle Double Double
+           | Circle Double
 
--- -- sumEntries : Num a => (pos : Integer) -> Vect n a -> Vect n a -> Maybe a
--- -- sumEntries p v1 v2 =
--- --   case integerToFin p (length v1) of
--- --     Just pf => Just (index pf v1 + index pf v2)
--- --     Nothing => Nothing
+data Picture = Primitive Shape
+             | Combine Picture Picture
+             | Rotate Double Picture
+             | Translate Double Double Picture
 
--- Eq Expr where
---   (Val a) == (Val b) = a == b
+biggestTriangle : Picture -> Maybe Double
+biggestTriangle (Primitive (Triangle base height)) = Just (0.5 * base * height)
+biggestTriangle (Primitive _) = Nothing
+biggestTriangle (Combine p1 p2) = max (biggestTriangle p1) (biggestTriangle p2)
+biggestTriangle (Rotate x p) = biggestTriangle p
+biggestTriangle (Translate x y p) = biggestTriangle p
