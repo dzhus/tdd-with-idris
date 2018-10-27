@@ -1,5 +1,7 @@
 module Ex4.2
 
+import Data.Vect
+
 -- 4.2.1, 4.2.2
 data PowerSource = Petrol | Pedal | Electric
 
@@ -23,3 +25,8 @@ total refuel : Vehicle Petrol -> Vehicle Petrol
 refuel (Car fuel) = Car 100
 refuel (Motorcycle fuel) = Motorcycle 50
 refuel (Bus fuel) = Bus 200
+
+-- 4.2.3, 4.2.4
+total vectTake : (m : Fin (S n)) -> Vect n a -> Vect (finToNat m) a
+vectTake FZ xs = []
+vectTake (FS i) (x :: xs) = x :: vectTake i xs
