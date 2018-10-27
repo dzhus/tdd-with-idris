@@ -30,3 +30,9 @@ refuel (Bus fuel) = Bus 200
 total vectTake : (m : Fin (S n)) -> Vect n a -> Vect (finToNat m) a
 vectTake FZ xs = []
 vectTake (FS i) (x :: xs) = x :: vectTake i xs
+
+-- 4.2.5
+total sumEntries : Num a => (pos : Integer) -> Vect n a -> Vect n a -> Maybe a
+sumEntries {n} pos xs ys = case integerToFin pos n of
+  Nothing => Nothing
+  Just x => Just $ index x xs + index x ys
