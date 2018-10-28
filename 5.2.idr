@@ -54,3 +54,20 @@ guess_v2 t guesses = do
 main_v2 : IO ()
 main_v2 = do
   time >>= \seed => guess_v2 (1 + (cast seed) `mod` 100) 0
+
+-- 5.2.4
+my_repl : String -> (String -> String) -> IO ()
+my_repl prompt proc = do
+  putStrLn prompt
+  getLine >>= \input => putStrLn (proc input)
+  my_repl prompt proc
+
+my_replWith : s -> String -> (s -> String -> Maybe (String, s)) -> IO ()
+my_replWith state prompt proc = do
+  putStrLn prompt
+  getLine >>= \input =>
+    case proc state input of
+      Nothing => pure ()
+      Just (output, newState) => do
+        putStrLn output
+        my_replWith newState prompt proc
