@@ -13,9 +13,10 @@ import Data.Vect
 
 infixr 5 .+.
 
-data Schema = SString | SInt | (.+.) Schema Schema
+data Schema = SChar| SString | SInt | (.+.) Schema Schema
 
 SchemaType : Schema -> Type
+SchemaType SChar = Char
 SchemaType SString = String
 SchemaType SInt = Int
 SchemaType (x .+. y) = (SchemaType x, SchemaType y)
@@ -46,6 +47,10 @@ data Command : Schema -> Type where
 
 
 parsePrefix : (schema : Schema) -> String -> Maybe (SchemaType schema, String)
+parsePrefix SChar input
+  = case span isAlpha (unpack input) of
+         ([c], rest) => Just (c, ltrim (pack rest))
+         _ => Nothing
 parsePrefix SString input = getQuoted (unpack input)
   where
     getQuoted : List Char -> Maybe (String, String)
@@ -73,6 +78,8 @@ parseBySchema schema x = case parsePrefix schema x of
                               Just _ => Nothing
 
 parseSchema : List String -> Maybe Schema
+parseSchema ("Char" :: []) = Just SChar
+parseSchema ("Char" :: xs) = map (SChar .+.) $ parseSchema xs
 parseSchema ("String" :: xs)
     = case xs of
            [] => Just SString
@@ -106,6 +113,7 @@ parse schema input = case span (/= ' ') input of
                           (cmd, args) => parseCommand schema cmd (ltrim args)
 
 display : SchemaType schema -> String
+display {schema = SChar} item = show item
 display {schema = SString} item = show item
 display {schema = SInt} item = show item
 display {schema = (y .+. z)} (iteml, itemr) = display iteml ++ ", " ++
@@ -119,7 +127,7 @@ getEntry pos store
                Nothing => Just ("Out of range\n", store)
                Just id => Just (display (index id (items store)) ++ "\n", store)
 
-processInput : DataStore -> String -> Maybe (String, DataStore)
+total processInput : DataStore -> String -> Maybe (String, DataStore)
 processInput store input
     = case parse (schema store) input of
            Nothing => Just ("Invalid command\n", store)
