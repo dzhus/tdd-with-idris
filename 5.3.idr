@@ -7,3 +7,12 @@ readToBlank = do
   case l of
     "" => pure []
     s  => readToBlank >>= \rest => pure (s :: rest)
+
+-- 5.3.2
+readAndSave : IO ()
+readAndSave = do
+  input <- readToBlank
+  fName <- getLine
+  Right () <- writeFile fName (concat $ map (++ "\n") input)
+  | Left err => putStrLn (show err)
+  pure ()
