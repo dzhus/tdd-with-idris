@@ -42,7 +42,7 @@ setSchema store schema = case size store of
 data Command : Schema -> Type where
      SetSchema : Schema -> Command schema
      Add : SchemaType schema -> Command schema
-     Get : Integer -> Command schema
+     Get : Maybe Integer -> Command schema
      Quit : Command schema
 
 
@@ -98,9 +98,10 @@ parseCommand : (schema : Schema) -> String -> String -> Maybe (Command schema)
 parseCommand schema "add" rest = case parseBySchema schema rest of
                                       Nothing => Nothing
                                       Just restok => Just (Add restok)
+parseCommand schema "get" "" = Just (Get Nothing)
 parseCommand schema "get" val = case all isDigit (unpack val) of
                                     False => Nothing
-                                    True => Just (Get (cast val))
+                                    True => Just (Get (Just $ cast val))
 parseCommand schema "quit" "" = Just Quit
 parseCommand schema "schema" rest
     = case parseSchema (words rest) of
@@ -119,10 +120,11 @@ display {schema = SInt} item = show item
 display {schema = (y .+. z)} (iteml, itemr) = display iteml ++ ", " ++
                                               display itemr
 
-getEntry : (pos : Integer) -> (store : DataStore) ->
+getEntry : (pos : Maybe Integer) -> (store : DataStore) ->
            Maybe (String, DataStore)
-getEntry pos store
-    = let store_items = items store in
+getEntry Nothing store = let entries = map display (items store) in
+  Just (concat $ map (++ "\n") entries, store)
+getEntry (Just pos) store = let store_items = items store in
           case integerToFin pos (size store) of
                Nothing => Just ("Out of range\n", store)
                Just id => Just (display (index id (items store)) ++ "\n", store)
