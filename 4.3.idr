@@ -20,7 +20,7 @@ addToStore (MkData size items) y = MkData _ (addToData items)
     addToData [] = [y]
     addToData (x :: xs) = x :: addToData xs
 
--- 4.3.1, 4.3.2
+-- 4.3.1, 4.3.2, 4.3.3.
 data Command = Add String
              | Get Integer
              | Search String
@@ -37,17 +37,18 @@ parseCommand "size" _ = Just Size
 parseCommand "quit" _ = Just Quit
 parseCommand _ _ = Nothing
 
-findMatches : String -> DataStore -> (p : Nat ** Vect p String)
-findMatches needle ds = filter (isInfixOf needle) $ items ds
+findMatches : String -> (ds : DataStore) -> (p : Nat ** Vect p (Fin (size ds), String))
+findMatches needle ds =
+  filter (\(i, s) => isInfixOf needle s) $ zip range (items ds)
 
 processCommand_search : (needle : String) -> (ds : DataStore) -> Maybe (String, DataStore)
 processCommand_search needle ds =
   case findMatches needle ds of
        (Z ** _) => Just ("No results\n", ds)
-       (r ** ms) => Just (concat $ map (++ "\n") ms, ds)
+       (r ** ms) => Just (concat $ map (\(i, s) => show (finToNat i) ++ ": " ++ s ++ "\n") ms, ds)
 
 processCommand : (cmd : Command) -> (ds : DataStore) -> Maybe (String, DataStore)
-processCommand (Add s) ds = Just ("Added " ++ s ++ "\n", addToStore ds s)
+processCommand (Add s) ds = Just ("ID " ++ show (size ds) ++ "\n", addToStore ds s)
 processCommand (Get i) ds = case integerToFin i (size ds) of
                                  Just i' => Just (index i' (items ds) ++ "\n", ds)
                                  Nothing => Just ("Wrong index\n", ds)
